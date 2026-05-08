@@ -4,6 +4,24 @@ import type { ThemeName } from "../themes";
 import { EMOJIS } from "../constants";
 import { playDoneSound } from "../utils/sound";
 
+const SESSION_KEY = "pomodoro_sessions";
+const today = () => new Date().toISOString().slice(0, 10);
+
+function loadTodaySessions(): number {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.date === today()) return parsed.count as number;
+    }
+  } catch {}
+  return 0;
+}
+
+function saveTodaySessions(count: number) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ date: today(), count }));
+}
+
 export function useTimer() {
   const [mode, setMode] = useState<Mode>("focus");
   const [focusMin, setFocusMin] = useState(25);
@@ -15,7 +33,9 @@ export function useTimer() {
   const [wiggle, setWiggle] = useState(false);
   const [done, setDone] = useState(false);
   const [theme, setTheme] = useState<ThemeName>("pink");
+  const [todaySessions, setTodaySessions] = useState(loadTodaySessions);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prevDoneRef = useRef(false);
 
   const totalTime = mode === "focus" ? focusMin * 60 : breakMin * 60;
   const progress = 1 - timeLeft / totalTime;
@@ -53,10 +73,27 @@ export function useTimer() {
     return () => clearInterval(intervalRef.current!);
   }, [running]);
 
+  useEffect(() => {
+    if (done && !prevDoneRef.current && mode === "focus") {
+      setTodaySessions((prev) => {
+        const next = prev + 1;
+        saveTodaySessions(next);
+        return next;
+      });
+    }
+    prevDoneRef.current = done;
+  }, [done, mode]);
+
   const reset = () => {
     setTimeLeft(mode === "focus" ? focusMin * 60 : breakMin * 60);
     setRunning(false);
     setDone(false);
+  };
+
+  const restart = () => {
+    setTimeLeft(mode === "focus" ? focusMin * 60 : breakMin * 60);
+    setDone(false);
+    setRunning(true);
   };
 
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
@@ -84,5 +121,7 @@ export function useTimer() {
     setTheme,
     switchMode,
     reset,
+    restart,
+    todaySessions,
   };
 }

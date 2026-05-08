@@ -146,6 +146,13 @@ const styles: Record<string, React.CSSProperties> = {
     minWidth: 32,
     textAlign: "center",
   },
+  sessionBadge: {
+    marginTop: 14,
+    textAlign: "center",
+    fontSize: 13,
+    color: "var(--th-text-label)",
+    letterSpacing: 0.2,
+  },
 };
 
 export default styles;
