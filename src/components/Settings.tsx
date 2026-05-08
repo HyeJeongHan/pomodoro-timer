@@ -1,19 +1,61 @@
+import type { Dispatch, SetStateAction } from "react";
 import type { Mode } from "../types";
+import type { ThemeName } from "../themes";
+import { THEMES } from "../themes";
 import styles from "../styles";
 
 type Props = {
   mode: Mode;
   focusMin: number;
   breakMin: number;
-  setFocusMin: (v: number) => void;
-  setBreakMin: (v: number) => void;
-  setTimeLeft: (v: number) => void;
+  setFocusMin: Dispatch<SetStateAction<number>>;
+  setBreakMin: Dispatch<SetStateAction<number>>;
+  setTimeLeft: Dispatch<SetStateAction<number>>;
+  theme: ThemeName;
+  setTheme: Dispatch<SetStateAction<ThemeName>>;
 };
 
-export default function Settings({ mode, focusMin, breakMin, setFocusMin, setBreakMin, setTimeLeft }: Props) {
+export default function Settings({
+  mode,
+  focusMin,
+  breakMin,
+  setFocusMin,
+  setBreakMin,
+  setTimeLeft,
+  theme,
+  setTheme,
+}: Props) {
   return (
     <div style={styles.settings}>
       <p style={styles.settingsTitle}>⏱ 시간 설정</p>
+
+      {/* Theme picker */}
+      <div style={{ ...styles.settingsRow, marginBottom: 14 }}>
+        <label style={styles.label}>🎨 테마</label>
+        <div style={{ display: "flex", gap: 8 }}>
+          {THEMES.map((t) => (
+            <button
+              key={t.name}
+              title={t.label}
+              onClick={() => setTheme(t.name)}
+              style={{
+                width: 26,
+                height: 26,
+                borderRadius: "50%",
+                background: t.swatch,
+                border: "none",
+                cursor: "pointer",
+                outline: theme === t.name ? `3px solid ${t.swatch}` : "none",
+                outlineOffset: 2,
+                boxShadow: theme === t.name ? "0 0 0 1.5px #fff inset" : "none",
+                transition: "outline 0.15s, box-shadow 0.15s",
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Focus time */}
       <div style={styles.settingsRow}>
         <label style={styles.label}>🎯 집중 시간</label>
         <div style={styles.stepper}>
@@ -40,7 +82,9 @@ export default function Settings({ mode, focusMin, breakMin, setFocusMin, setBre
           </button>
         </div>
       </div>
-      <div style={styles.settingsRow}>
+
+      {/* Break time */}
+      <div style={{ ...styles.settingsRow, marginBottom: 0 }}>
         <label style={styles.label}>☕ 휴식 시간</label>
         <div style={styles.stepper}>
           <button

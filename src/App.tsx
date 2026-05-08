@@ -1,4 +1,5 @@
 import { useTimer } from "./hooks/useTimer";
+import { THEMES } from "./themes";
 import CircleTimer from "./components/CircleTimer";
 import ModeTab from "./components/ModeTab";
 import Controls from "./components/Controls";
@@ -7,9 +8,10 @@ import styles from "./styles";
 
 export default function App() {
   const timer = useTimer();
+  const currentTheme = THEMES.find((t) => t.name === timer.theme)!;
 
   return (
-    <div style={styles.page}>
+    <div style={{ ...styles.page, ...(currentTheme.vars as React.CSSProperties) }}>
       <div style={styles.card}>
         <div style={styles.header}>
           <span style={styles.title}>뽀모도로 🍅</span>
@@ -50,6 +52,8 @@ export default function App() {
             setFocusMin={timer.setFocusMin}
             setBreakMin={timer.setBreakMin}
             setTimeLeft={timer.setTimeLeft}
+            theme={timer.theme}
+            setTheme={timer.setTheme}
           />
         )}
       </div>

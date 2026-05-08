@@ -20,8 +20,8 @@ export default function Controls({ mode, running, done, onToggle, onReset }: Pro
           ...styles.btnPrimary,
           background:
             mode === "focus"
-              ? "linear-gradient(135deg,#f9a8d4,#f472b6)"
-              : "linear-gradient(135deg,#86efac,#4ade80)",
+              ? "linear-gradient(135deg, var(--th-p300), var(--th-p400))"
+              : "linear-gradient(135deg, var(--th-break-btn-start), var(--th-break-btn-end))",
         }}
         onClick={onToggle}
       >

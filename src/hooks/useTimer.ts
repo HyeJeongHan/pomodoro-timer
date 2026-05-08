@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { Mode } from "../types";
+import type { ThemeName } from "../themes";
 import { EMOJIS } from "../constants";
 import { playDoneSound } from "../utils/sound";
 
@@ -13,6 +14,7 @@ export function useTimer() {
   const [emojiIdx, setEmojiIdx] = useState(0);
   const [wiggle, setWiggle] = useState(false);
   const [done, setDone] = useState(false);
+  const [theme, setTheme] = useState<ThemeName>("pink");
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const totalTime = mode === "focus" ? focusMin * 60 : breakMin * 60;
@@ -78,6 +80,8 @@ export function useTimer() {
     setRunning,
     setShowSettings,
     setTimeLeft,
+    theme,
+    setTheme,
     switchMode,
     reset,
   };
