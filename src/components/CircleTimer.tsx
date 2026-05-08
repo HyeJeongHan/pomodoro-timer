@@ -30,13 +30,13 @@ export default function CircleTimer({ mode, progress, emoji, mm, ss, done, wiggl
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
         </defs>
-        <circle cx="110" cy="110" r={r} fill="none" stroke="#fde8f0" strokeWidth="14" />
+        <circle cx="110" cy="110" r={r} fill="none" stroke="var(--th-p100)" strokeWidth="14" />
         <circle
           cx="110"
           cy="110"
           r={r}
           fill="none"
-          stroke={mode === "focus" ? "#f472b6" : "#86efac"}
+          stroke={mode === "focus" ? "var(--th-p400)" : "var(--th-break)"}
           strokeWidth="14"
           strokeLinecap="round"
           strokeDasharray={`${dash} ${circ}`}
@@ -54,7 +54,7 @@ export default function CircleTimer({ mode, progress, emoji, mm, ss, done, wiggl
           fontSize="32"
           fontFamily="'Courier New', monospace"
           fontWeight="700"
-          fill={mode === "focus" ? "#db2777" : "#16a34a"}
+          fill={mode === "focus" ? "var(--th-p600)" : "var(--th-break-dark)"}
         >
           {mm}:{ss}
         </text>
