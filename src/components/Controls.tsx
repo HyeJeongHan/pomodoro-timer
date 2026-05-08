@@ -7,9 +7,10 @@ type Props = {
   done: boolean;
   onToggle: () => void;
   onReset: () => void;
+  onRestart: () => void;
 };
 
-export default function Controls({ mode, running, done, onToggle, onReset }: Props) {
+export default function Controls({ mode, running, done, onToggle, onReset, onRestart }: Props) {
   return (
     <div style={styles.controls}>
       <button style={styles.btnSecondary} onClick={onReset}>
@@ -23,7 +24,7 @@ export default function Controls({ mode, running, done, onToggle, onReset }: Pro
               ? "linear-gradient(135deg, var(--th-p300), var(--th-p400))"
               : "linear-gradient(135deg, var(--th-break-btn-start), var(--th-break-btn-end))",
         }}
-        onClick={onToggle}
+        onClick={done ? onRestart : onToggle}
       >
         {running ? "⏸ 일시정지" : done ? "🔁 다시하기" : "▶ 시작"}
       </button>

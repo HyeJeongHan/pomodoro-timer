@@ -42,7 +42,16 @@ export default function App() {
           done={timer.done}
           onToggle={() => timer.setRunning((r) => !r)}
           onReset={timer.reset}
+          onRestart={timer.restart}
         />
+
+        <div style={styles.sessionBadge}>
+          {"🍅".repeat(Math.min(timer.todaySessions, 8))}
+          {timer.todaySessions > 0 && (
+            <span style={{ marginLeft: 6 }}>오늘 {timer.todaySessions}세션 완료</span>
+          )}
+          {timer.todaySessions === 0 && "오늘 아직 완료한 세션이 없어요"}
+        </div>
 
         {timer.showSettings && (
           <Settings
