@@ -1,0 +1,67 @@
+import { useTimer } from "./hooks/useTimer";
+import CircleTimer from "./components/CircleTimer";
+import ModeTab from "./components/ModeTab";
+import Controls from "./components/Controls";
+import Settings from "./components/Settings";
+import styles from "./styles";
+
+export default function App() {
+  const timer = useTimer();
+
+  return (
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <div style={styles.header}>
+          <span style={styles.title}>뽀모도로 🍅</span>
+          <button
+            style={styles.iconBtn}
+            onClick={() => timer.setShowSettings((s) => !s)}
+            title="설정"
+          >
+            ⚙️
+          </button>
+        </div>
+
+        <ModeTab mode={timer.mode} onSwitch={timer.switchMode} />
+
+        <CircleTimer
+          mode={timer.mode}
+          progress={timer.progress}
+          emoji={timer.emoji}
+          mm={timer.mm}
+          ss={timer.ss}
+          done={timer.done}
+          wiggle={timer.wiggle}
+        />
+
+        <Controls
+          mode={timer.mode}
+          running={timer.running}
+          done={timer.done}
+          onToggle={() => timer.setRunning((r) => !r)}
+          onReset={timer.reset}
+        />
+
+        {timer.showSettings && (
+          <Settings
+            mode={timer.mode}
+            focusMin={timer.focusMin}
+            breakMin={timer.breakMin}
+            setFocusMin={timer.setFocusMin}
+            setBreakMin={timer.setBreakMin}
+            setTimeLeft={timer.setTimeLeft}
+          />
+        )}
+      </div>
+
+      <style>{`
+        @keyframes wiggle {
+          0%,100% { transform: rotate(0deg) scale(1); }
+          25% { transform: rotate(-4deg) scale(1.05); }
+          75% { transform: rotate(4deg) scale(1.05); }
+        }
+        body { margin: 0; }
+      `}</style>
+    </div>
+  );
+}
