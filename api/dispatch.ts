@@ -1,5 +1,5 @@
 import webpush from "web-push";
-import { list } from "@vercel/blob";
+import { list, del } from "@vercel/blob";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 webpush.setVapidDetails(
@@ -8,23 +8,30 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
+type Scheduled = {
+  subscription: webpush.PushSubscription;
+  fireAt: number;
+  title: string;
+  body: string;
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.headers["authorization"] !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).end();
   }
 
-  const { blobs } = await list({ prefix: "subscriptions/" });
-
-  const payload = JSON.stringify({
-    title: "🍅 오늘 뽀모도로 했나요?",
-    body: "집중 한 세션으로 하루를 마무리해보세요!",
-  });
+  const { blobs } = await list({ prefix: "scheduled/" });
+  const now = Date.now();
 
   const results = await Promise.allSettled(
     blobs.map(async (blob) => {
       const r = await fetch(blob.url);
-      const sub = await r.json();
-      return webpush.sendNotification(sub, payload);
+      const data = (await r.json()) as Scheduled;
+      if (data.fireAt > now) return;
+
+      const payload = JSON.stringify({ title: data.title, body: data.body });
+      await webpush.sendNotification(data.subscription, payload);
+      await del(blob.url);
     })
   );
 

@@ -28,10 +28,13 @@ export async function subscribeToPush(): Promise<boolean> {
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
     });
 
+    const subJson = subscription.toJSON();
+    localStorage.setItem("pomodoro_push_subscription", JSON.stringify(subJson));
+
     await fetch("/api/subscribe", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(subscription),
+      body: JSON.stringify(subJson),
     });
 
     return true;

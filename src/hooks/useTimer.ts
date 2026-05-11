@@ -69,10 +69,48 @@ export function useTimer() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevDoneRef = useRef(false);
   const modeRef = useRef(mode);
+  const timeLeftRef = useRef(timeLeft);
+  const scheduleBlobRef = useRef<string | null>(null);
 
   useEffect(() => {
     modeRef.current = mode;
   }, [mode]);
+
+  useEffect(() => {
+    timeLeftRef.current = timeLeft;
+  }, [timeLeft]);
+
+  const schedulePush = useCallback(async (delaySeconds: number, m: Mode) => {
+    const subRaw = localStorage.getItem("pomodoro_push_subscription");
+    if (!subRaw) return;
+    try {
+      const res = await fetch("/api/schedule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subscription: JSON.parse(subRaw),
+          delaySeconds,
+          title: m === "focus" ? "🍅 집중 완료!" : "☕ 휴식 완료!",
+          body: m === "focus" ? "수고했어요! 잠깐 쉬어가세요." : "다시 집중 시작할까요?",
+        }),
+      });
+      const { blobUrl } = (await res.json()) as { blobUrl: string };
+      scheduleBlobRef.current = blobUrl;
+    } catch {}
+  }, []);
+
+  const cancelPush = useCallback(async () => {
+    if (!scheduleBlobRef.current) return;
+    const url = scheduleBlobRef.current;
+    scheduleBlobRef.current = null;
+    try {
+      await fetch("/api/cancel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blobUrl: url }),
+      });
+    } catch {}
+  }, []);
 
   const modeSeconds = useCallback(
     (m: Mode) => (m === "focus" ? focusMin : breakMin) * 60,
@@ -87,17 +125,19 @@ export function useTimer() {
 
   const switchMode = useCallback(
     (next: Mode) => {
+      cancelPush();
       setMode(next);
       setTimeLeft(modeSeconds(next));
       setRunning(false);
       setDone(false);
       setEmojiIdx(Math.floor(Math.random() * 5));
     },
-    [modeSeconds]
+    [modeSeconds, cancelPush]
   );
 
   useEffect(() => {
     if (running) {
+      schedulePush(timeLeftRef.current, modeRef.current);
       intervalRef.current = setInterval(() => {
         setTimeLeft((t) => {
           if (t <= 1) {
@@ -118,9 +158,10 @@ export function useTimer() {
       }, 1000);
     } else {
       clearInterval(intervalRef.current!);
+      cancelPush();
     }
     return () => clearInterval(intervalRef.current!);
-  }, [running]);
+  }, [running, schedulePush, cancelPush]);
 
   useEffect(() => {
     if (done && !prevDoneRef.current && mode === "focus") {
