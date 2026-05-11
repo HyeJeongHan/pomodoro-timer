@@ -4,22 +4,29 @@ import type { ThemeName } from "../themes";
 import { EMOJIS } from "../constants";
 import { playDoneSound } from "../utils/sound";
 
-const SESSION_KEY = "pomodoro_sessions";
+const HISTORY_KEY = "pomodoro_history";
+const OLD_SESSION_KEY = "pomodoro_sessions";
 const today = () => new Date().toISOString().slice(0, 10);
 
-function loadTodaySessions(): number {
+function loadHistory(): Record<string, number> {
   try {
-    const raw = localStorage.getItem(SESSION_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed.date === today()) return parsed.count as number;
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (raw) return JSON.parse(raw) as Record<string, number>;
+    const oldRaw = localStorage.getItem(OLD_SESSION_KEY);
+    if (oldRaw) {
+      const old = JSON.parse(oldRaw) as { date?: string; count?: number };
+      if (old.date && typeof old.count === "number") {
+        const migrated: Record<string, number> = { [old.date]: old.count };
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(migrated));
+        return migrated;
+      }
     }
   } catch {}
-  return 0;
+  return {};
 }
 
-function saveTodaySessions(count: number) {
-  localStorage.setItem(SESSION_KEY, JSON.stringify({ date: today(), count }));
+function saveHistory(history: Record<string, number>) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
 
 export function useTimer() {
@@ -33,10 +40,11 @@ export function useTimer() {
   const [wiggle, setWiggle] = useState(false);
   const [done, setDone] = useState(false);
   const [theme, setTheme] = useState<ThemeName>("pink");
-  const [todaySessions, setTodaySessions] = useState(loadTodaySessions);
+  const [sessionHistory, setSessionHistory] = useState<Record<string, number>>(loadHistory);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevDoneRef = useRef(false);
 
+  const todaySessions = sessionHistory[today()] ?? 0;
   const totalTime = mode === "focus" ? focusMin * 60 : breakMin * 60;
   const progress = 1 - timeLeft / totalTime;
 
@@ -75,9 +83,10 @@ export function useTimer() {
 
   useEffect(() => {
     if (done && !prevDoneRef.current && mode === "focus") {
-      setTodaySessions((prev) => {
-        const next = prev + 1;
-        saveTodaySessions(next);
+      setSessionHistory((prev) => {
+        const t = today();
+        const next = { ...prev, [t]: (prev[t] ?? 0) + 1 };
+        saveHistory(next);
         return next;
       });
     }
@@ -123,5 +132,6 @@ export function useTimer() {
     reset,
     restart,
     todaySessions,
+    sessionHistory,
   };
 }

@@ -32,6 +32,8 @@ export const THEMES: ThemeConfig[] = [
       "--th-break-dark": "#16a34a",
       "--th-break-btn-start": "#86efac",
       "--th-break-btn-end": "#4ade80",
+      "--th-dot-muted": "#b0b7c3",
+      "--th-dot-strong": "#2d3748",
     },
   },
   {
@@ -58,6 +60,8 @@ export const THEMES: ThemeConfig[] = [
       "--th-break-dark": "#0f766e",
       "--th-break-btn-start": "#5eead4",
       "--th-break-btn-end": "#2dd4bf",
+      "--th-dot-muted": "#b0b7c3",
+      "--th-dot-strong": "#2d3748",
     },
   },
   {
@@ -84,6 +88,8 @@ export const THEMES: ThemeConfig[] = [
       "--th-break-dark": "#16a34a",
       "--th-break-btn-start": "#86efac",
       "--th-break-btn-end": "#4ade80",
+      "--th-dot-muted": "#b0b7c3",
+      "--th-dot-strong": "#2d3748",
     },
   },
   {
@@ -110,6 +116,8 @@ export const THEMES: ThemeConfig[] = [
       "--th-break-dark": "#2dd4bf",
       "--th-break-btn-start": "#5eead4",
       "--th-break-btn-end": "#14b8a6",
+      "--th-dot-muted": "#585b70",
+      "--th-dot-strong": "#e2e8f0",
     },
   },
 ];
