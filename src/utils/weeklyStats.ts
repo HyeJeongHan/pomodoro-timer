@@ -1,9 +1,6 @@
-const DAY_KO = ["일", "월", "화", "수", "목", "금", "토"];
+import { formatDate } from "./date";
 
-function fmt(d: Date) {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
+const DAY_KO = ["일", "월", "화", "수", "목", "금", "토"];
 
 export type WeeklyStats = {
   totalSessions: number;
@@ -20,11 +17,10 @@ export function calcWeeklyStats(
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  // 이번 주 월요일 기준 7일 (오늘 포함 이전 7일)
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(now);
     d.setDate(now.getDate() - (6 - i));
-    const key = fmt(d);
+    const key = formatDate(d);
     return {
       key,
       label: DAY_KO[d.getDay()],
