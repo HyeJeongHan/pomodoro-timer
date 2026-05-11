@@ -4,6 +4,7 @@ import CircleTimer from "./components/CircleTimer";
 import ModeTab from "./components/ModeTab";
 import Controls from "./components/Controls";
 import Settings from "./components/Settings";
+import Calendar from "./components/Calendar";
 import styles from "./styles";
 
 export default function App() {
@@ -52,6 +53,8 @@ export default function App() {
           )}
           {timer.todaySessions === 0 && "오늘 아직 완료한 세션이 없어요"}
         </div>
+
+        <Calendar sessionHistory={timer.sessionHistory} />
 
         {timer.showSettings && (
           <Settings
