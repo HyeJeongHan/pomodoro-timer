@@ -153,6 +153,23 @@ const styles: Record<string, React.CSSProperties> = {
     color: "var(--th-text-label)",
     letterSpacing: 0.2,
   },
+  streakBadge: {
+    marginTop: 10,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    padding: "7px 14px",
+    background: "linear-gradient(135deg, var(--th-p50), var(--th-p100))",
+    borderRadius: 20,
+    border: "1.5px solid var(--th-p200)",
+  },
+  streakText: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: "var(--th-p700)",
+    letterSpacing: -0.2,
+  },
 };
 
 export default styles;

@@ -29,6 +29,25 @@ function saveHistory(history: Record<string, number>) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
 
+function calcStreak(history: Record<string, number>): number {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const fmt = (d: Date) =>
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+  const cur = new Date();
+  cur.setHours(0, 0, 0, 0);
+
+  // 오늘 세션이 없으면 어제부터 역산 (스트릭 유지 중으로 간주)
+  if (!history[fmt(cur)]) cur.setDate(cur.getDate() - 1);
+
+  let streak = 0;
+  while ((history[fmt(cur)] ?? 0) > 0) {
+    streak++;
+    cur.setDate(cur.getDate() - 1);
+  }
+  return streak;
+}
+
 export function useTimer() {
   const [mode, setMode] = useState<Mode>("focus");
   const [focusMin, setFocusMin] = useState(25);
@@ -45,6 +64,7 @@ export function useTimer() {
   const prevDoneRef = useRef(false);
 
   const todaySessions = sessionHistory[today()] ?? 0;
+  const streak = calcStreak(sessionHistory);
   const totalTime = mode === "focus" ? focusMin * 60 : breakMin * 60;
   const progress = 1 - timeLeft / totalTime;
 
@@ -133,5 +153,6 @@ export function useTimer() {
     restart,
     todaySessions,
     sessionHistory,
+    streak,
   };
 }
