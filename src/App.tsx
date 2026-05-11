@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTimer } from "./hooks/useTimer";
 import { requestNotificationPermission } from "./utils/notifications";
 import { useTasks } from "./hooks/useTasks";
@@ -20,8 +20,15 @@ export default function App() {
   const { tasks, addTask, toggleTask, deleteTask } = useTasks();
   const currentTheme = THEMES.find((t) => t.name === timer.theme)!;
   const [showShare, setShowShare] = useState(false);
+  const settingsRef = useRef<HTMLDivElement>(null);
 
   const weeklyStats = calcWeeklyStats(timer.sessionHistory, timer.focusMin);
+
+  useEffect(() => {
+    if (timer.showSettings && settingsRef.current) {
+      settingsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [timer.showSettings]);
 
   const handleShareToggle = () => {
     setShowShare((s) => !s);
@@ -105,16 +112,18 @@ export default function App() {
         )}
 
         {timer.showSettings && (
-          <Settings
-            focusMin={timer.focusMin}
-            breakMin={timer.breakMin}
-            updateFocusMin={timer.updateFocusMin}
-            updateBreakMin={timer.updateBreakMin}
-            theme={timer.theme}
-            setTheme={timer.setTheme}
-            dailyGoal={timer.dailyGoal}
-            setDailyGoal={timer.setDailyGoal}
-          />
+          <div ref={settingsRef}>
+            <Settings
+              focusMin={timer.focusMin}
+              breakMin={timer.breakMin}
+              updateFocusMin={timer.updateFocusMin}
+              updateBreakMin={timer.updateBreakMin}
+              theme={timer.theme}
+              setTheme={timer.setTheme}
+              dailyGoal={timer.dailyGoal}
+              setDailyGoal={timer.setDailyGoal}
+            />
+          </div>
         )}
       </div>
 
