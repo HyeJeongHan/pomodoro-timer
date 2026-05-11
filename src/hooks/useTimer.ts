@@ -29,6 +29,16 @@ function saveHistory(history: Record<string, number>) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
 
+const GOAL_KEY = "pomodoro_daily_goal";
+
+function loadDailyGoal(): number {
+  try {
+    const raw = localStorage.getItem(GOAL_KEY);
+    if (raw) return parseInt(raw, 10);
+  } catch {}
+  return 4;
+}
+
 function calcStreak(history: Record<string, number>): number {
   const pad = (n: number) => String(n).padStart(2, "0");
   const fmt = (d: Date) =>
@@ -60,6 +70,7 @@ export function useTimer() {
   const [done, setDone] = useState(false);
   const [theme, setTheme] = useState<ThemeName>("pink");
   const [sessionHistory, setSessionHistory] = useState<Record<string, number>>(loadHistory);
+  const [dailyGoal, setDailyGoalState] = useState(loadDailyGoal);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevDoneRef = useRef(false);
 
@@ -156,5 +167,10 @@ export function useTimer() {
     totalSessions,
     sessionHistory,
     streak,
+    dailyGoal,
+    setDailyGoal: (n: number) => {
+      setDailyGoalState(n);
+      localStorage.setItem(GOAL_KEY, String(n));
+    },
   };
 }

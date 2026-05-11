@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTimer } from "./hooks/useTimer";
+import { useTasks } from "./hooks/useTasks";
 import { THEMES } from "./themes";
 import CircleTimer from "./components/CircleTimer";
 import ModeTab from "./components/ModeTab";
@@ -8,11 +9,14 @@ import Settings from "./components/Settings";
 import Calendar from "./components/Calendar";
 import ShareCard from "./components/ShareCard";
 import BadgeDisplay from "./components/BadgeDisplay";
+import DailyGoal from "./components/DailyGoal";
+import TodoList from "./components/TodoList";
 import { calcWeeklyStats } from "./utils/weeklyStats";
 import styles from "./styles";
 
 export default function App() {
   const timer = useTimer();
+  const { tasks, addTask, toggleTask, deleteTask } = useTasks();
   const currentTheme = THEMES.find((t) => t.name === timer.theme)!;
   const [showShare, setShowShare] = useState(false);
 
@@ -62,13 +66,10 @@ export default function App() {
           onRestart={timer.restart}
         />
 
-        <div style={styles.sessionBadge}>
-          {"🍅".repeat(Math.min(timer.todaySessions, 8))}
-          {timer.todaySessions > 0 && (
-            <span style={{ marginLeft: 6 }}>오늘 {timer.todaySessions}세션 완료</span>
-          )}
-          {timer.todaySessions === 0 && "오늘 아직 완료한 세션이 없어요"}
-        </div>
+        <DailyGoal
+          todaySessions={timer.todaySessions}
+          dailyGoal={timer.dailyGoal}
+        />
 
         {timer.streak > 0 && (
           <div style={styles.streakBadge}>
@@ -76,6 +77,13 @@ export default function App() {
             <span style={styles.streakText}>{timer.streak}일 연속 집중 중!</span>
           </div>
         )}
+
+        <TodoList
+          tasks={tasks}
+          onAdd={addTask}
+          onToggle={toggleTask}
+          onDelete={deleteTask}
+        />
 
         <BadgeDisplay totalSessions={timer.totalSessions} />
 
@@ -100,6 +108,8 @@ export default function App() {
             setTimeLeft={timer.setTimeLeft}
             theme={timer.theme}
             setTheme={timer.setTheme}
+            dailyGoal={timer.dailyGoal}
+            setDailyGoal={timer.setDailyGoal}
           />
         )}
       </div>

@@ -13,6 +13,8 @@ type Props = {
   setTimeLeft: Dispatch<SetStateAction<number>>;
   theme: ThemeName;
   setTheme: Dispatch<SetStateAction<ThemeName>>;
+  dailyGoal: number;
+  setDailyGoal: (n: number) => void;
 };
 
 export default function Settings({
@@ -24,6 +26,8 @@ export default function Settings({
   setTimeLeft,
   theme,
   setTheme,
+  dailyGoal,
+  setDailyGoal,
 }: Props) {
   return (
     <div style={styles.settings}>
@@ -77,6 +81,26 @@ export default function Settings({
               setFocusMin(v);
               if (mode === "focus") setTimeLeft(v * 60);
             }}
+          >
+            +
+          </button>
+        </div>
+      </div>
+
+      {/* Daily goal */}
+      <div style={styles.settingsRow}>
+        <label style={styles.label}>🎯 오늘 목표</label>
+        <div style={styles.stepper}>
+          <button
+            style={styles.stepBtn}
+            onClick={() => setDailyGoal(Math.max(1, dailyGoal - 1))}
+          >
+            −
+          </button>
+          <span style={styles.stepVal}>{dailyGoal}개</span>
+          <button
+            style={styles.stepBtn}
+            onClick={() => setDailyGoal(Math.min(20, dailyGoal + 1))}
           >
             +
           </button>
