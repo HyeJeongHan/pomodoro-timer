@@ -1,19 +1,18 @@
-export type Task = {
-  id: string;
-  text: string;
-  done: boolean;
-};
+import type { Task } from "../types";
+import { today } from "./date";
 
-const key = () => `pomodoro_tasks_${new Date().toISOString().slice(0, 10)}`;
+export type { Task };
+
+const taskKey = () => `pomodoro_tasks_${today()}`;
 
 export function loadTasks(): Task[] {
   try {
-    const raw = localStorage.getItem(key());
+    const raw = localStorage.getItem(taskKey());
     if (raw) return JSON.parse(raw) as Task[];
   } catch {}
   return [];
 }
 
 export function saveTasks(tasks: Task[]) {
-  localStorage.setItem(key(), JSON.stringify(tasks));
+  localStorage.setItem(taskKey(), JSON.stringify(tasks));
 }

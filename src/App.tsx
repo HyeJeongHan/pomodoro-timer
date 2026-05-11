@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTimer } from "./hooks/useTimer";
+import { requestNotificationPermission } from "./utils/notifications";
 import { useTasks } from "./hooks/useTasks";
 import { THEMES } from "./themes";
 import CircleTimer from "./components/CircleTimer";
@@ -22,24 +23,26 @@ export default function App() {
 
   const weeklyStats = calcWeeklyStats(timer.sessionHistory, timer.focusMin);
 
+  const handleShareToggle = () => {
+    setShowShare((s) => !s);
+    timer.closeSettings();
+  };
+
+  const handleSettingsToggle = () => {
+    timer.toggleSettings();
+    setShowShare(false);
+  };
+
   return (
     <div style={{ ...styles.page, ...(currentTheme.vars as React.CSSProperties) }}>
       <div style={styles.card}>
         <div style={styles.header}>
           <span style={styles.title}>뽀모도로 🍅</span>
           <div style={{ display: "flex", gap: 4 }}>
-            <button
-              style={styles.iconBtn}
-              onClick={() => { setShowShare((s) => !s); timer.setShowSettings(() => false); }}
-              title="공유"
-            >
+            <button style={styles.iconBtn} onClick={handleShareToggle} title="공유">
               📤
             </button>
-            <button
-              style={styles.iconBtn}
-              onClick={() => { timer.setShowSettings((s) => !s); setShowShare(false); }}
-              title="설정"
-            >
+            <button style={styles.iconBtn} onClick={handleSettingsToggle} title="설정">
               ⚙️
             </button>
           </div>
@@ -61,7 +64,10 @@ export default function App() {
           mode={timer.mode}
           running={timer.running}
           done={timer.done}
-          onToggle={() => timer.setRunning((r) => !r)}
+          onToggle={() => {
+            if (!timer.running) requestNotificationPermission();
+            timer.toggle();
+          }}
           onReset={timer.reset}
           onRestart={timer.restart}
         />
@@ -100,12 +106,10 @@ export default function App() {
 
         {timer.showSettings && (
           <Settings
-            mode={timer.mode}
             focusMin={timer.focusMin}
             breakMin={timer.breakMin}
-            setFocusMin={timer.setFocusMin}
-            setBreakMin={timer.setBreakMin}
-            setTimeLeft={timer.setTimeLeft}
+            updateFocusMin={timer.updateFocusMin}
+            updateBreakMin={timer.updateBreakMin}
             theme={timer.theme}
             setTheme={timer.setTheme}
             dailyGoal={timer.dailyGoal}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatDate, today } from "../utils/date";
 
 type Props = {
   sessionHistory: Record<string, number>;
@@ -6,16 +7,12 @@ type Props = {
 
 const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
-function dateKey(year: number, month: number, day: number) {
-  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-
 export default function Calendar({ sessionHistory }: Props) {
   const now = new Date();
   const [viewYear, setViewYear] = useState(now.getFullYear());
   const [viewMonth, setViewMonth] = useState(now.getMonth());
 
-  const todayKey = dateKey(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayKey = today();
 
   const firstWeekday = new Date(viewYear, viewMonth, 1).getDay();
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
@@ -52,7 +49,7 @@ export default function Calendar({ sessionHistory }: Props) {
 
         {cells.map((day, i) => {
           if (day === null) return <div key={`empty-${i}`} />;
-          const key = dateKey(viewYear, viewMonth, day);
+          const key = formatDate(new Date(viewYear, viewMonth, day));
           const count = sessionHistory[key] ?? 0;
           const isToday = key === todayKey;
           const dotColor = count >= 5
