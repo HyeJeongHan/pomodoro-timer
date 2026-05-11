@@ -64,6 +64,7 @@ export function useTimer() {
   const prevDoneRef = useRef(false);
 
   const todaySessions = sessionHistory[today()] ?? 0;
+  const totalSessions = Object.values(sessionHistory).reduce((a, b) => a + b, 0);
   const streak = calcStreak(sessionHistory);
   const totalTime = mode === "focus" ? focusMin * 60 : breakMin * 60;
   const progress = 1 - timeLeft / totalTime;
@@ -152,6 +153,7 @@ export function useTimer() {
     reset,
     restart,
     todaySessions,
+    totalSessions,
     sessionHistory,
     streak,
   };

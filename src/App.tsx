@@ -7,6 +7,7 @@ import Controls from "./components/Controls";
 import Settings from "./components/Settings";
 import Calendar from "./components/Calendar";
 import ShareCard from "./components/ShareCard";
+import BadgeDisplay from "./components/BadgeDisplay";
 import { calcWeeklyStats } from "./utils/weeklyStats";
 import styles from "./styles";
 
@@ -76,6 +77,8 @@ export default function App() {
           </div>
         )}
 
+        <BadgeDisplay totalSessions={timer.totalSessions} />
+
         <Calendar sessionHistory={timer.sessionHistory} />
 
         {showShare && (
@@ -106,6 +109,12 @@ export default function App() {
           0%,100% { transform: rotate(0deg) scale(1); }
           25% { transform: rotate(-4deg) scale(1.05); }
           75% { transform: rotate(4deg) scale(1.05); }
+        }
+        @keyframes badgePop {
+          0%   { transform: scale(1); }
+          30%  { transform: scale(1.5) rotate(-10deg); }
+          60%  { transform: scale(1.3) rotate(8deg); }
+          100% { transform: scale(1); }
         }
         body { margin: 0; }
       `}</style>
