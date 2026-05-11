@@ -54,6 +54,13 @@ export default function App() {
           {timer.todaySessions === 0 && "오늘 아직 완료한 세션이 없어요"}
         </div>
 
+        {timer.streak > 0 && (
+          <div style={styles.streakBadge}>
+            <span style={{ fontSize: 16 }}>🔥</span>
+            <span style={styles.streakText}>{timer.streak}일 연속 집중 중!</span>
+          </div>
+        )}
+
         <Calendar sessionHistory={timer.sessionHistory} />
 
         {timer.showSettings && (
