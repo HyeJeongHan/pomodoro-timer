@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTimer } from "./hooks/useTimer";
 import { THEMES } from "./themes";
 import CircleTimer from "./components/CircleTimer";
@@ -5,24 +6,38 @@ import ModeTab from "./components/ModeTab";
 import Controls from "./components/Controls";
 import Settings from "./components/Settings";
 import Calendar from "./components/Calendar";
+import ShareCard from "./components/ShareCard";
+import { calcWeeklyStats } from "./utils/weeklyStats";
 import styles from "./styles";
 
 export default function App() {
   const timer = useTimer();
   const currentTheme = THEMES.find((t) => t.name === timer.theme)!;
+  const [showShare, setShowShare] = useState(false);
+
+  const weeklyStats = calcWeeklyStats(timer.sessionHistory, timer.focusMin);
 
   return (
     <div style={{ ...styles.page, ...(currentTheme.vars as React.CSSProperties) }}>
       <div style={styles.card}>
         <div style={styles.header}>
           <span style={styles.title}>뽀모도로 🍅</span>
-          <button
-            style={styles.iconBtn}
-            onClick={() => timer.setShowSettings((s) => !s)}
-            title="설정"
-          >
-            ⚙️
-          </button>
+          <div style={{ display: "flex", gap: 4 }}>
+            <button
+              style={styles.iconBtn}
+              onClick={() => { setShowShare((s) => !s); timer.setShowSettings(() => false); }}
+              title="공유"
+            >
+              📤
+            </button>
+            <button
+              style={styles.iconBtn}
+              onClick={() => { timer.setShowSettings((s) => !s); setShowShare(false); }}
+              title="설정"
+            >
+              ⚙️
+            </button>
+          </div>
         </div>
 
         <ModeTab mode={timer.mode} onSwitch={timer.switchMode} />
@@ -62,6 +77,15 @@ export default function App() {
         )}
 
         <Calendar sessionHistory={timer.sessionHistory} />
+
+        {showShare && (
+          <ShareCard
+            stats={weeklyStats}
+            streak={timer.streak}
+            focusMin={timer.focusMin}
+            themeVars={currentTheme.vars}
+          />
+        )}
 
         {timer.showSettings && (
           <Settings
