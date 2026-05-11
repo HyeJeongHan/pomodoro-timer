@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTimer } from "./hooks/useTimer";
+import { requestNotificationPermission } from "./utils/notifications";
 import { useTasks } from "./hooks/useTasks";
 import { THEMES } from "./themes";
 import CircleTimer from "./components/CircleTimer";
@@ -61,7 +62,10 @@ export default function App() {
           mode={timer.mode}
           running={timer.running}
           done={timer.done}
-          onToggle={() => timer.setRunning((r) => !r)}
+          onToggle={() => {
+            if (!timer.running) requestNotificationPermission();
+            timer.setRunning((r) => !r);
+          }}
           onReset={timer.reset}
           onRestart={timer.restart}
         />

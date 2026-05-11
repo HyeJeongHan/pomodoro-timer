@@ -3,10 +3,12 @@ import type { Mode } from "../types";
 import type { ThemeName } from "../themes";
 import { EMOJIS } from "../constants";
 import { playDoneSound } from "../utils/sound";
+import { sendNotification } from "../utils/notifications";
+import { formatDate, today } from "../utils/date";
 
 const HISTORY_KEY = "pomodoro_history";
 const OLD_SESSION_KEY = "pomodoro_sessions";
-const today = () => new Date().toISOString().slice(0, 10);
+const GOAL_KEY = "pomodoro_daily_goal";
 
 function loadHistory(): Record<string, number> {
   try {
@@ -29,8 +31,6 @@ function saveHistory(history: Record<string, number>) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
 }
 
-const GOAL_KEY = "pomodoro_daily_goal";
-
 function loadDailyGoal(): number {
   try {
     const raw = localStorage.getItem(GOAL_KEY);
@@ -40,18 +40,13 @@ function loadDailyGoal(): number {
 }
 
 function calcStreak(history: Record<string, number>): number {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  const fmt = (d: Date) =>
-    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-
   const cur = new Date();
   cur.setHours(0, 0, 0, 0);
 
-  // 오늘 세션이 없으면 어제부터 역산 (스트릭 유지 중으로 간주)
-  if (!history[fmt(cur)]) cur.setDate(cur.getDate() - 1);
+  if (!history[formatDate(cur)]) cur.setDate(cur.getDate() - 1);
 
   let streak = 0;
-  while ((history[fmt(cur)] ?? 0) > 0) {
+  while ((history[formatDate(cur)] ?? 0) > 0) {
     streak++;
     cur.setDate(cur.getDate() - 1);
   }
@@ -73,22 +68,32 @@ export function useTimer() {
   const [dailyGoal, setDailyGoalState] = useState(loadDailyGoal);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevDoneRef = useRef(false);
+  const modeRef = useRef(mode);
+
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
+  const modeSeconds = useCallback(
+    (m: Mode) => (m === "focus" ? focusMin : breakMin) * 60,
+    [focusMin, breakMin]
+  );
 
   const todaySessions = sessionHistory[today()] ?? 0;
   const totalSessions = Object.values(sessionHistory).reduce((a, b) => a + b, 0);
   const streak = calcStreak(sessionHistory);
-  const totalTime = mode === "focus" ? focusMin * 60 : breakMin * 60;
+  const totalTime = modeSeconds(mode);
   const progress = 1 - timeLeft / totalTime;
 
   const switchMode = useCallback(
     (next: Mode) => {
       setMode(next);
-      setTimeLeft((next === "focus" ? focusMin : breakMin) * 60);
+      setTimeLeft(modeSeconds(next));
       setRunning(false);
       setDone(false);
       setEmojiIdx(Math.floor(Math.random() * 5));
     },
-    [focusMin, breakMin]
+    [modeSeconds]
   );
 
   useEffect(() => {
@@ -102,6 +107,10 @@ export function useTimer() {
             playDoneSound();
             setWiggle(true);
             setTimeout(() => setWiggle(false), 800);
+            sendNotification(
+              modeRef.current === "focus" ? "🍅 집중 완료!" : "☕ 휴식 완료!",
+              modeRef.current === "focus" ? "수고했어요! 잠깐 쉬어가세요." : "다시 집중 시작할까요?"
+            );
             return 0;
           }
           return t - 1;
@@ -125,17 +134,50 @@ export function useTimer() {
     prevDoneRef.current = done;
   }, [done, mode]);
 
-  const reset = () => {
-    setTimeLeft(mode === "focus" ? focusMin * 60 : breakMin * 60);
+  const reset = useCallback(() => {
+    setTimeLeft(modeSeconds(mode));
     setRunning(false);
     setDone(false);
-  };
+  }, [mode, modeSeconds]);
 
-  const restart = () => {
-    setTimeLeft(mode === "focus" ? focusMin * 60 : breakMin * 60);
+  const restart = useCallback(() => {
+    setTimeLeft(modeSeconds(mode));
     setDone(false);
     setRunning(true);
-  };
+  }, [mode, modeSeconds]);
+
+  const toggle = useCallback(() => {
+    setRunning((r) => !r);
+  }, []);
+
+  const toggleSettings = useCallback(() => {
+    setShowSettings((s) => !s);
+  }, []);
+
+  const closeSettings = useCallback(() => {
+    setShowSettings(false);
+  }, []);
+
+  const updateFocusMin = useCallback(
+    (v: number) => {
+      setFocusMin(v);
+      if (mode === "focus") setTimeLeft(v * 60);
+    },
+    [mode]
+  );
+
+  const updateBreakMin = useCallback(
+    (v: number) => {
+      setBreakMin(v);
+      if (mode === "break") setTimeLeft(v * 60);
+    },
+    [mode]
+  );
+
+  const setDailyGoal = useCallback((n: number) => {
+    setDailyGoalState(n);
+    localStorage.setItem(GOAL_KEY, String(n));
+  }, []);
 
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
@@ -153,24 +195,21 @@ export function useTimer() {
     mm,
     ss,
     emoji,
-    setFocusMin,
-    setBreakMin,
-    setRunning,
-    setShowSettings,
-    setTimeLeft,
     theme,
     setTheme,
     switchMode,
     reset,
     restart,
+    toggle,
+    toggleSettings,
+    closeSettings,
+    updateFocusMin,
+    updateBreakMin,
     todaySessions,
     totalSessions,
     sessionHistory,
     streak,
     dailyGoal,
-    setDailyGoal: (n: number) => {
-      setDailyGoalState(n);
-      localStorage.setItem(GOAL_KEY, String(n));
-    },
+    setDailyGoal,
   };
 }

@@ -1,7 +1,10 @@
 import type { Dispatch, SetStateAction } from "react";
+import { useState } from "react";
 import type { Mode } from "../types";
 import type { ThemeName } from "../themes";
 import { THEMES } from "../themes";
+import { requestNotificationPermission } from "../utils/notifications";
+import { subscribeToPush } from "../utils/webpush";
 import styles from "../styles";
 
 type Props = {
@@ -134,6 +137,52 @@ export default function Settings({
           </button>
         </div>
       </div>
+
+      {/* Push notification */}
+      <PushToggle />
+    </div>
+  );
+}
+
+function PushToggle() {
+  const supported = "serviceWorker" in navigator && "PushManager" in window;
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "denied">(
+    !supported ? "denied" : "idle"
+  );
+
+  const handle = async () => {
+    setStatus("loading");
+    const granted = await requestNotificationPermission();
+    if (!granted) { setStatus("denied"); return; }
+    const ok = await subscribeToPush();
+    setStatus(ok ? "done" : "denied");
+  };
+
+  const label =
+    status === "loading" ? "설정 중…"
+    : status === "done"  ? "✅ 알림 설정 완료"
+    : status === "denied"? "🚫 알림 권한 없음"
+    : "🔔 매일 저녁 알림 받기";
+
+  return (
+    <div style={{ marginTop: 10 }}>
+      <button
+        style={{
+          width: "100%",
+          padding: "8px 0",
+          borderRadius: 12,
+          border: "1.5px solid var(--th-p200)",
+          background: status === "done" ? "var(--th-p100)" : "var(--th-step-bg)",
+          color: "var(--th-p700)",
+          fontSize: 12,
+          fontWeight: 600,
+          cursor: status === "idle" ? "pointer" : "default",
+        }}
+        onClick={status === "idle" ? handle : undefined}
+        disabled={status !== "idle"}
+      >
+        {label}
+      </button>
     </div>
   );
 }
