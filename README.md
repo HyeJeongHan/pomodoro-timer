@@ -1,73 +1,66 @@
-# React + TypeScript + Vite
+# 🍅 뽀모도로 타이머
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+집중과 휴식을 반복하는 **뽀모도로 기법** 기반의 생산성 타이머 앱입니다.
 
-Currently, two official plugins are available:
+> **뽀모도로 기법이란?**
+> 25분 집중 → 5분 휴식을 한 사이클로 반복해 집중력을 높이는 시간 관리 기법입니다.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ 주요 기능
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### ⏱ 타이머
+- 집중 / 휴식 모드 전환
+- 원형 타이머로 남은 시간 시각화
+- 타이머 완료 시 Web Push 알림 (브라우저 종료 상태에서도 수신 가능)
 
-## Expanding the ESLint configuration
+### 🎯 목표 & 성취
+- 하루 목표 세션 수 설정 및 달성 현황 표시
+- 🔥 연속 집중 스트릭 추적
+- 누적 세션 수에 따라 자동 획득되는 **뱃지 시스템**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### ✅ 할 일 목록
+- 오늘 집중할 작업을 간편하게 기록·체크·삭제
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### 📅 캘린더
+- 날짜별 세션 기록을 캘린더 히트맵으로 확인
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### 📤 공유 카드
+- 주간 통계를 이미지로 저장해 공유
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### ⚙️ 설정
+- 집중 시간 / 휴식 시간 커스터마이징
+- 다양한 테마 선택
+- 일일 목표 세션 수 설정
+
+---
+
+## 🛠 기술 스택
+
+| 분류 | 기술 |
+|------|------|
+| 프레임워크 | React 19 + TypeScript |
+| 빌드 도구 | Vite |
+| 알림 | Web Push API + Service Worker |
+| 이미지 생성 | html2canvas |
+| 스토리지 | Vercel Blob |
+| 배포 | Vercel |
+
+---
+
+## 🚀 로컬 실행
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 📦 빌드 & 배포
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
 ```
+
+Vercel에 연결된 저장소라면 `main` 브랜치 push 시 자동 배포됩니다.
