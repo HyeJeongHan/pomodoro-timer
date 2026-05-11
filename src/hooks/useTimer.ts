@@ -139,22 +139,28 @@ export function useTimer() {
     if (running) {
       schedulePush(timeLeftRef.current, modeRef.current);
       intervalRef.current = setInterval(() => {
-        setTimeLeft((t) => {
-          if (t <= 1) {
-            clearInterval(intervalRef.current!);
-            setRunning(false);
-            setDone(true);
+        const next = timeLeftRef.current - 1;
+        if (next <= 0) {
+          clearInterval(intervalRef.current!);
+          timeLeftRef.current = 0;
+          setTimeLeft(0);
+          setRunning(false);
+          setDone(true);
+          try {
             playDoneSound();
-            setWiggle(true);
-            setTimeout(() => setWiggle(false), 800);
-            sendNotification(
-              modeRef.current === "focus" ? "🍅 집중 완료!" : "☕ 휴식 완료!",
-              modeRef.current === "focus" ? "수고했어요! 잠깐 쉬어가세요." : "다시 집중 시작할까요?"
-            );
-            return 0;
+          } catch {
+            // AudioContext 사용 불가 환경 무시
           }
-          return t - 1;
-        });
+          setWiggle(true);
+          setTimeout(() => setWiggle(false), 800);
+          sendNotification(
+            modeRef.current === "focus" ? "🍅 집중 완료!" : "☕ 휴식 완료!",
+            modeRef.current === "focus" ? "수고했어요! 잠깐 쉬어가세요." : "다시 집중 시작할까요?"
+          );
+        } else {
+          timeLeftRef.current = next;
+          setTimeLeft(next);
+        }
       }, 1000);
     } else {
       clearInterval(intervalRef.current!);
