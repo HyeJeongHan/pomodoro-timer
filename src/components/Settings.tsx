@@ -14,6 +14,8 @@ type Props = {
   setTheme: (t: ThemeName) => void;
   dailyGoal: number;
   setDailyGoal: (n: number) => void;
+  devMode: boolean;
+  setDevMode: (on: boolean) => void;
 };
 
 export default function Settings({
@@ -25,6 +27,8 @@ export default function Settings({
   setTheme,
   dailyGoal,
   setDailyGoal,
+  devMode,
+  setDevMode,
 }: Props) {
   return (
     <div style={styles.settings}>
@@ -111,6 +115,26 @@ export default function Settings({
           </button>
         </div>
       </div>
+
+      {import.meta.env.DEV && (
+        <div style={{ ...styles.settingsRow, marginTop: 10, marginBottom: 0 }}>
+          <label style={styles.label}>🛠 개발 모드 (3초)</label>
+          <button
+            style={{
+              ...styles.stepBtn,
+              width: "auto",
+              padding: "0 10px",
+              background: devMode ? "var(--th-p300)" : "var(--th-step-bg)",
+              color: devMode ? "#fff" : "var(--th-p700)",
+              fontSize: 11,
+              fontWeight: 700,
+            }}
+            onClick={() => setDevMode(!devMode)}
+          >
+            {devMode ? "ON" : "OFF"}
+          </button>
+        </div>
+      )}
 
       <PushToggle />
     </div>

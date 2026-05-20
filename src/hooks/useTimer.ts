@@ -60,6 +60,7 @@ export function useTimer() {
   const [timerMode, setTimerMode] = useState<Mode>("focus");
   const [focusMin, setFocusMin] = useState(25);
   const [breakMin, setBreakMin] = useState(5);
+  const [devMode, setDevModeState] = useState(false);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [running, setRunning] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -126,9 +127,17 @@ export function useTimer() {
   }, []);
 
   const modeSeconds = useCallback(
-    (m: Mode) => (m === "focus" ? focusMin : breakMin) * 60,
-    [focusMin, breakMin]
+    (m: Mode) => devMode ? 3 : (m === "focus" ? focusMin : breakMin) * 60,
+    [focusMin, breakMin, devMode]
   );
+
+  const setDevMode = useCallback((on: boolean) => {
+    setDevModeState(on);
+    if (!runningRef.current) {
+      setTimeLeft(on ? 3 : (timerModeRef.current === "focus" ? focusMin : breakMin) * 60);
+      setDone(false);
+    }
+  }, [focusMin, breakMin]);
 
   const todaySessions = sessionHistory[today()] ?? 0;
   const totalSessions = Object.values(sessionHistory).reduce((a, b) => a + b, 0);
@@ -291,5 +300,7 @@ export function useTimer() {
     streak,
     dailyGoal,
     setDailyGoal,
+    devMode,
+    setDevMode,
   };
 }
