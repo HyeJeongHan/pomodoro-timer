@@ -54,7 +54,10 @@ function calcStreak(history: Record<string, number>): number {
 }
 
 export function useTimer() {
+  // mode: 현재 선택된 탭 (시각적)
+  // timerMode: 실제 타이머가 속한 모드 (실행 중에는 탭 전환으로 바뀌지 않음)
   const [mode, setMode] = useState<Mode>("focus");
+  const [timerMode, setTimerMode] = useState<Mode>("focus");
   const [focusMin, setFocusMin] = useState(25);
   const [breakMin, setBreakMin] = useState(5);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
@@ -69,12 +72,22 @@ export function useTimer() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevDoneRef = useRef(false);
   const modeRef = useRef(mode);
+  const timerModeRef = useRef(timerMode);
   const timeLeftRef = useRef(timeLeft);
+  const runningRef = useRef(running);
   const scheduleBlobRef = useRef<string | null>(null);
 
   useEffect(() => {
     modeRef.current = mode;
   }, [mode]);
+
+  useEffect(() => {
+    timerModeRef.current = timerMode;
+  }, [timerMode]);
+
+  useEffect(() => {
+    runningRef.current = running;
+  }, [running]);
 
   useEffect(() => {
     timeLeftRef.current = timeLeft;
@@ -120,13 +133,22 @@ export function useTimer() {
   const todaySessions = sessionHistory[today()] ?? 0;
   const totalSessions = Object.values(sessionHistory).reduce((a, b) => a + b, 0);
   const streak = calcStreak(sessionHistory);
-  const totalTime = modeSeconds(mode);
+  // 프로그레스/이모지는 실제 타이머 모드 기준
+  const totalTime = modeSeconds(timerMode);
   const progress = 1 - timeLeft / totalTime;
+  // 타이머가 한 번 시작됐다가 일시정지된 상태
+  const paused = !running && !done && timeLeft < totalTime;
 
   const switchMode = useCallback(
     (next: Mode) => {
+      if (runningRef.current) {
+        // 실행 중에는 탭만 바꾸고 타이머는 유지
+        setMode(next);
+        return;
+      }
       cancelPush();
       setMode(next);
+      setTimerMode(next);
       setTimeLeft(modeSeconds(next));
       setRunning(false);
       setDone(false);
@@ -137,7 +159,7 @@ export function useTimer() {
 
   useEffect(() => {
     if (running) {
-      schedulePush(timeLeftRef.current, modeRef.current);
+      schedulePush(timeLeftRef.current, timerModeRef.current);
       intervalRef.current = setInterval(() => {
         const next = timeLeftRef.current - 1;
         if (next <= 0) {
@@ -154,8 +176,8 @@ export function useTimer() {
           setWiggle(true);
           setTimeout(() => setWiggle(false), 800);
           sendNotification(
-            modeRef.current === "focus" ? "🍅 집중 완료!" : "☕ 휴식 완료!",
-            modeRef.current === "focus" ? "수고했어요! 잠깐 쉬어가세요." : "다시 집중 시작할까요?"
+            timerModeRef.current === "focus" ? "🍅 집중 완료!" : "☕ 휴식 완료!",
+            timerModeRef.current === "focus" ? "수고했어요! 잠깐 쉬어가세요." : "다시 집중 시작할까요?"
           );
         } else {
           timeLeftRef.current = next;
@@ -170,7 +192,7 @@ export function useTimer() {
   }, [running, schedulePush, cancelPush]);
 
   useEffect(() => {
-    if (done && !prevDoneRef.current && mode === "focus") {
+    if (done && !prevDoneRef.current && timerModeRef.current === "focus") {
       setSessionHistory((prev) => {
         const t = today();
         const next = { ...prev, [t]: (prev[t] ?? 0) + 1 };
@@ -179,22 +201,31 @@ export function useTimer() {
       });
     }
     prevDoneRef.current = done;
-  }, [done, mode]);
+  }, [done]);
 
   const reset = useCallback(() => {
-    setTimeLeft(modeSeconds(mode));
+    setTimerMode(modeRef.current);
+    setTimeLeft(modeSeconds(modeRef.current));
     setRunning(false);
     setDone(false);
-  }, [mode, modeSeconds]);
+  }, [modeSeconds]);
 
   const restart = useCallback(() => {
-    setTimeLeft(modeSeconds(mode));
+    setTimerMode(modeRef.current);
+    setTimeLeft(modeSeconds(modeRef.current));
     setDone(false);
     setRunning(true);
-  }, [mode, modeSeconds]);
+  }, [modeSeconds]);
 
   const toggle = useCallback(() => {
-    setRunning((r) => !r);
+    setRunning((r) => {
+      if (!r) {
+        // 시작 시점에 현재 탭 모드를 timerMode로 고정
+        setTimerMode(modeRef.current);
+        timerModeRef.current = modeRef.current;
+      }
+      return !r;
+    });
   }, []);
 
   const toggleSettings = useCallback(() => {
@@ -208,17 +239,17 @@ export function useTimer() {
   const updateFocusMin = useCallback(
     (v: number) => {
       setFocusMin(v);
-      if (mode === "focus") setTimeLeft(v * 60);
+      if (timerModeRef.current === "focus") setTimeLeft(v * 60);
     },
-    [mode]
+    []
   );
 
   const updateBreakMin = useCallback(
     (v: number) => {
       setBreakMin(v);
-      if (mode === "break") setTimeLeft(v * 60);
+      if (timerModeRef.current === "break") setTimeLeft(v * 60);
     },
-    [mode]
+    []
   );
 
   const setDailyGoal = useCallback((n: number) => {
@@ -228,13 +259,15 @@ export function useTimer() {
 
   const mm = String(Math.floor(timeLeft / 60)).padStart(2, "0");
   const ss = String(timeLeft % 60).padStart(2, "0");
-  const emoji = EMOJIS[mode][emojiIdx];
+  const emoji = EMOJIS[timerMode][emojiIdx];
 
   return {
     mode,
+    timerMode,
     focusMin,
     breakMin,
     running,
+    paused,
     showSettings,
     wiggle,
     done,
