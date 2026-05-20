@@ -176,7 +176,7 @@ export default function App() {
 
   return (
     <div style={{ ...styles.page, ...(currentTheme.vars as React.CSSProperties) }}>
-      <div style={styles.card}>
+      <div style={styles.card} className="app-card">
         <div style={styles.header}>
           <span style={styles.title}>뽀모도로 🍅</span>
           <div style={{ display: "flex", gap: 4 }}>
@@ -189,109 +189,115 @@ export default function App() {
           </div>
         </div>
 
-        <ModeTab
-          mode={timer.mode}
-          onSwitch={(next) => {
-            setShowModeConflict(false);
-            timer.switchMode(next);
-          }}
-        />
-
-        <CircleTimer
-          mode={timer.timerMode}
-          progress={timer.progress}
-          emoji={timer.emoji}
-          mm={timer.mm}
-          ss={timer.ss}
-          done={timer.done}
-          wiggle={timer.wiggle}
-        />
-
-        <Controls
-          mode={timer.mode}
-          running={timer.running}
-          done={timer.done}
-          onToggle={handleStartClick}
-          onReset={timer.reset}
-          onRestart={timer.restart}
-        />
-
-        {showModeConflict && (
-          <div style={conflictStyle.wrap}>
-            <span style={conflictStyle.text}>
-              ⚠️ {conflictModeLabel} 타이머가 실행 중이에요. 시작하면 {conflictModeLabel} 타이머가 리셋됩니다.
-            </span>
-            <div style={conflictStyle.btns}>
-              <button style={conflictStyle.cancel} onClick={() => setShowModeConflict(false)}>
-                취소
-              </button>
-              <button style={conflictStyle.confirm} onClick={handleModeConflictConfirm}>
-                시작하기
-              </button>
-            </div>
-          </div>
-        )}
-
-        <ActiveTaskBanner
-          task={tasks.find((t) => t.id === activeTaskId) ?? null}
-          onClear={handleBannerClear}
-        />
-
-        <DailyGoal
-          todaySessions={timer.todaySessions}
-          dailyGoal={timer.dailyGoal}
-        />
-
-        {timer.streak > 0 && (
-          <div style={styles.streakBadge}>
-            <span style={{ fontSize: 16 }}>🔥</span>
-            <span style={styles.streakText}>{timer.streak}일 연속 집중 중!</span>
-          </div>
-        )}
-
-        <TodoList
-          tasks={tasks}
-          activeTaskId={activeTaskId}
-          deleteConfirmId={deleteConfirmId}
-          onAdd={addTask}
-          onToggle={toggleTask}
-          onDelete={handleDeleteTask}
-          onDeleteConfirm={handleDeleteConfirm}
-          onDeleteCancel={() => setDeleteConfirmId(null)}
-          onSelect={handleListSelect}
-        />
-
-        <BadgeDisplay totalSessions={timer.totalSessions} />
-
-        <Calendar sessionHistory={timer.sessionHistory} />
-
-        {showShare && (
-          <div ref={shareRef}>
-            <ShareCard
-              stats={weeklyStats}
-              streak={timer.streak}
-              focusMin={timer.focusMin}
-              themeVars={currentTheme.vars}
+        <div className="app-body">
+          <div className="app-col-left">
+            <ModeTab
+              mode={timer.mode}
+              onSwitch={(next) => {
+                setShowModeConflict(false);
+                timer.switchMode(next);
+              }}
             />
-          </div>
-        )}
 
-        {timer.showSettings && (
-          <div ref={settingsRef}>
-            <Settings
-              focusMin={timer.focusMin}
-              breakMin={timer.breakMin}
-              updateFocusMin={timer.updateFocusMin}
-              updateBreakMin={timer.updateBreakMin}
-              theme={timer.theme}
-              setTheme={timer.setTheme}
+            <CircleTimer
+              mode={timer.timerMode}
+              progress={timer.progress}
+              emoji={timer.emoji}
+              mm={timer.mm}
+              ss={timer.ss}
+              done={timer.done}
+              wiggle={timer.wiggle}
+            />
+
+            <Controls
+              mode={timer.mode}
+              running={timer.running}
+              done={timer.done}
+              onToggle={handleStartClick}
+              onReset={timer.reset}
+              onRestart={timer.restart}
+            />
+
+            {showModeConflict && (
+              <div style={conflictStyle.wrap}>
+                <span style={conflictStyle.text}>
+                  ⚠️ {conflictModeLabel} 타이머가 실행 중이에요. 시작하면 {conflictModeLabel} 타이머가 리셋됩니다.
+                </span>
+                <div style={conflictStyle.btns}>
+                  <button style={conflictStyle.cancel} onClick={() => setShowModeConflict(false)}>
+                    취소
+                  </button>
+                  <button style={conflictStyle.confirm} onClick={handleModeConflictConfirm}>
+                    시작하기
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <ActiveTaskBanner
+              task={tasks.find((t) => t.id === activeTaskId) ?? null}
+              onClear={handleBannerClear}
+            />
+
+            <DailyGoal
+              todaySessions={timer.todaySessions}
               dailyGoal={timer.dailyGoal}
-              setDailyGoal={timer.setDailyGoal}
-              devMode={timer.devMode}
-              setDevMode={timer.setDevMode}
             />
+
+            {timer.streak > 0 && (
+              <div style={styles.streakBadge}>
+                <span style={{ fontSize: 16 }}>🔥</span>
+                <span style={styles.streakText}>{timer.streak}일 연속 집중 중!</span>
+              </div>
+            )}
           </div>
-        )}
+
+          <div className="app-col-right">
+            <TodoList
+              tasks={tasks}
+              activeTaskId={activeTaskId}
+              deleteConfirmId={deleteConfirmId}
+              onAdd={addTask}
+              onToggle={toggleTask}
+              onDelete={handleDeleteTask}
+              onDeleteConfirm={handleDeleteConfirm}
+              onDeleteCancel={() => setDeleteConfirmId(null)}
+              onSelect={handleListSelect}
+            />
+
+            <BadgeDisplay totalSessions={timer.totalSessions} />
+
+            <Calendar sessionHistory={timer.sessionHistory} />
+
+            {showShare && (
+              <div ref={shareRef}>
+                <ShareCard
+                  stats={weeklyStats}
+                  streak={timer.streak}
+                  focusMin={timer.focusMin}
+                  themeVars={currentTheme.vars}
+                />
+              </div>
+            )}
+
+            {timer.showSettings && (
+              <div ref={settingsRef}>
+                <Settings
+                  focusMin={timer.focusMin}
+                  breakMin={timer.breakMin}
+                  updateFocusMin={timer.updateFocusMin}
+                  updateBreakMin={timer.updateBreakMin}
+                  theme={timer.theme}
+                  setTheme={timer.setTheme}
+                  dailyGoal={timer.dailyGoal}
+                  setDailyGoal={timer.setDailyGoal}
+                  devMode={timer.devMode}
+                  setDevMode={timer.setDevMode}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {showTaskModal && (
@@ -328,7 +334,35 @@ export default function App() {
           60%  { transform: scale(1.3) rotate(8deg); }
           100% { transform: scale(1); }
         }
-body { margin: 0; }
+        body { margin: 0; }
+
+        .app-card {
+          width: calc(100vw - 32px);
+          max-width: 340px;
+        }
+        .app-body {
+          display: flex;
+          flex-direction: column;
+        }
+        @media (min-width: 640px) {
+          .app-card {
+            max-width: 800px;
+            width: calc(100vw - 48px);
+          }
+          .app-body {
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 28px;
+          }
+          .app-col-left {
+            width: 284px;
+            flex-shrink: 0;
+          }
+          .app-col-right {
+            flex: 1;
+            min-width: 0;
+          }
+        }
       `}</style>
     </div>
   );

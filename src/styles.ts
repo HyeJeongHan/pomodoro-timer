@@ -14,7 +14,6 @@ const styles: Record<string, React.CSSProperties> = {
     backdropFilter: "blur(12px)",
     borderRadius: 28,
     padding: "28px 32px 32px",
-    width: 300,
     boxShadow: "0 8px 32px rgba(var(--th-shadow-rgb), 0.18), 0 2px 8px rgba(0,0,0,0.06)",
     border: "1.5px solid rgba(var(--th-shadow-rgb), 0.3)",
   },
