@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1200" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 40%, #fbcfe8 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* 배경 장식 원 */
+    .bg-circle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.15;
+    }
+    .bg-circle-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, #f472b6, #ec4899);
+      top: -120px; right: -80px;
+    }
+    .bg-circle-2 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, #f9a8d4, #f472b6);
+      bottom: -80px; left: -60px;
+    }
+    .bg-circle-3 {
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, #fbb6ce, #f472b6);
+      top: 40px; left: 120px;
+      opacity: 0.1;
+    }
+
+    .container {
+      display: flex;
+      align-items: center;
+      gap: 80px;
+      z-index: 1;
+      padding: 0 80px;
+      width: 100%;
+    }
+
+    /* 왼쪽: 타이머 UI 미리보기 */
+    .timer-preview {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .timer-ring {
+      width: 200px;
+      height: 200px;
+      position: relative;
+    }
+    .timer-ring svg {
+      transform: rotate(-90deg);
+    }
+    .timer-text {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    .timer-emoji { font-size: 32px; display: block; margin-bottom: 4px; }
+    .timer-digits {
+      font-size: 42px;
+      font-weight: 800;
+      color: #be185d;
+      letter-spacing: -1px;
+      line-height: 1;
+    }
+    .timer-mode {
+      font-size: 13px;
+      font-weight: 700;
+      color: #db2777;
+      letter-spacing: 0.5px;
+    }
+
+    /* 오른쪽: 텍스트 */
+    .content {
+      flex: 1;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(244, 114, 182, 0.15);
+      border: 1.5px solid rgba(244, 114, 182, 0.4);
+      color: #be185d;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+      letter-spacing: 0.3px;
+    }
+    h1 {
+      font-size: 62px;
+      font-weight: 900;
+      color: #831843;
+      line-height: 1.1;
+      letter-spacing: -2px;
+      margin-bottom: 16px;
+    }
+    h1 span { color: #db2777; }
+    .subtitle {
+      font-size: 22px;
+      color: #9d174d;
+      font-weight: 500;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .tag {
+      background: rgba(255, 255, 255, 0.7);
+      border: 1.5px solid rgba(244, 114, 182, 0.35);
+      color: #be185d;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-circle bg-circle-1"></div>
+  <div class="bg-circle bg-circle-2"></div>
+  <div class="bg-circle bg-circle-3"></div>
+
+  <div class="container">
+    <div class="timer-preview">
+      <div class="timer-ring">
+        <svg width="200" height="200" viewBox="0 0 200 200">
+          <!-- 배경 트랙 -->
+          <circle cx="100" cy="100" r="85"
+            fill="none"
+            stroke="rgba(244,114,182,0.2)"
+            stroke-width="12" />
+          <!-- 진행 원호 (약 70% 채움) -->
+          <circle cx="100" cy="100" r="85"
+            fill="none"
+            stroke="url(#grad)"
+            stroke-width="12"
+            stroke-linecap="round"
+            stroke-dasharray="534"
+            stroke-dashoffset="160" />
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#f472b6" />
+              <stop offset="100%" style="stop-color:#ec4899" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="timer-text">
+          <span class="timer-emoji">🍅</span>
+          <span class="timer-digits">25:00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="badge">🍅 Pomodoro Timer</div>
+      <h1>뽀모도로<br/><span>타이머</span></h1>
+      <p class="subtitle">
+        25분 집중 · 5분 휴식<br/>
+        수험생 · 직장인 · 공부에 최적화된 무료 타이머
+      </p>
+      <div class="tags">
+        <span class="tag">집중력 향상</span>
+        <span class="tag">시간 관리</span>
+        <span class="tag">생산성</span>
+        <span class="tag">공부 타이머</span>
+        <span class="tag">무료</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
