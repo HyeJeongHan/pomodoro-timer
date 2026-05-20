@@ -287,6 +287,8 @@ export default function App() {
               setTheme={timer.setTheme}
               dailyGoal={timer.dailyGoal}
               setDailyGoal={timer.setDailyGoal}
+              devMode={timer.devMode}
+              setDevMode={timer.setDevMode}
             />
           </div>
         )}
