@@ -27,7 +27,7 @@ function SessionDots({ count }: { count: number }) {
 }
 
 export default function TodoList({ tasks, activeTaskId, deleteConfirmId, onAdd, onToggle, onDelete, onDeleteConfirm, onDeleteCancel, onSelect }: Props) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const doneCount = tasks.filter((t) => t.done).length;

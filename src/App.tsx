@@ -7,14 +7,14 @@ import CircleTimer from "./components/CircleTimer";
 import ModeTab from "./components/ModeTab";
 import Controls from "./components/Controls";
 import Settings from "./components/Settings";
-import Calendar from "./components/Calendar";
 import ShareCard from "./components/ShareCard";
-import BadgeDisplay from "./components/BadgeDisplay";
 import DailyGoal from "./components/DailyGoal";
-import TodoList from "./components/TodoList";
 import ActiveTaskBanner from "./components/ActiveTaskBanner";
 import TaskSelectModal from "./components/TaskSelectModal";
+import RightPanel from "./components/RightPanel";
 import { calcWeeklyStats } from "./utils/weeklyStats";
+import { loadSessionLog, saveSessionLog, appendSessionEntry, type SessionLog } from "./utils/sessionLog";
+import { today } from "./utils/date";
 import styles from "./styles";
 
 export default function App() {
@@ -26,17 +26,12 @@ export default function App() {
   const [showModeConflict, setShowModeConflict] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isReplacing, setIsReplacing] = useState(false);
-  const settingsRef = useRef<HTMLDivElement>(null);
   const shareRef = useRef<HTMLDivElement>(null);
   const prevDoneRef = useRef(false);
 
   const weeklyStats = calcWeeklyStats(timer.sessionHistory, timer.focusMin);
+  const [sessionLog, setSessionLog] = useState<SessionLog>(loadSessionLog);
 
-  useEffect(() => {
-    if (timer.showSettings && settingsRef.current) {
-      settingsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, [timer.showSettings]);
 
   useEffect(() => {
     if (showShare && shareRef.current) {
@@ -45,11 +40,25 @@ export default function App() {
   }, [showShare]);
 
   useEffect(() => {
-    if (timer.done && !prevDoneRef.current && timer.timerMode === "focus" && activeTaskId) {
-      addSessionToTask(activeTaskId);
+    if (timer.done && !prevDoneRef.current && timer.timerMode === "focus") {
+      if (activeTaskId) addSessionToTask(activeTaskId);
+
+      const activeTask = tasks.find((t) => t.id === activeTaskId) ?? null;
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, "0");
+      const mm = String(now.getMinutes()).padStart(2, "0");
+      setSessionLog((prev) => {
+        const next = appendSessionEntry(prev, today(), {
+          taskId: activeTaskId,
+          taskText: activeTask?.text ?? null,
+          time: `${hh}:${mm}`,
+        });
+        saveSessionLog(next);
+        return next;
+      });
     }
     prevDoneRef.current = timer.done;
-  }, [timer.done, timer.timerMode, activeTaskId, addSessionToTask]);
+  }, [timer.done, timer.timerMode, activeTaskId, addSessionToTask, tasks]);
 
   const handleShareToggle = () => {
     setShowShare((s) => !s);
@@ -253,23 +262,7 @@ export default function App() {
           </div>
 
           <div className="app-col-right">
-            <TodoList
-              tasks={tasks}
-              activeTaskId={activeTaskId}
-              deleteConfirmId={deleteConfirmId}
-              onAdd={addTask}
-              onToggle={toggleTask}
-              onDelete={handleDeleteTask}
-              onDeleteConfirm={handleDeleteConfirm}
-              onDeleteCancel={() => setDeleteConfirmId(null)}
-              onSelect={handleListSelect}
-            />
-
-            <BadgeDisplay totalSessions={timer.totalSessions} />
-
-            <Calendar sessionHistory={timer.sessionHistory} />
-
-            {showShare && (
+            {showShare ? (
               <div ref={shareRef}>
                 <ShareCard
                   stats={weeklyStats}
@@ -278,23 +271,22 @@ export default function App() {
                   themeVars={currentTheme.vars}
                 />
               </div>
-            )}
-
-            {timer.showSettings && (
-              <div ref={settingsRef}>
-                <Settings
-                  focusMin={timer.focusMin}
-                  breakMin={timer.breakMin}
-                  updateFocusMin={timer.updateFocusMin}
-                  updateBreakMin={timer.updateBreakMin}
-                  theme={timer.theme}
-                  setTheme={timer.setTheme}
-                  dailyGoal={timer.dailyGoal}
-                  setDailyGoal={timer.setDailyGoal}
-                  devMode={timer.devMode}
-                  setDevMode={timer.setDevMode}
-                />
-              </div>
+            ) : (
+              <RightPanel
+                tasks={tasks}
+                activeTaskId={activeTaskId}
+                deleteConfirmId={deleteConfirmId}
+                onAddTask={addTask}
+                onToggleTask={toggleTask}
+                onDeleteTask={handleDeleteTask}
+                onDeleteConfirm={handleDeleteConfirm}
+                onDeleteCancel={() => setDeleteConfirmId(null)}
+                onSelectTask={handleListSelect}
+                sessionHistory={timer.sessionHistory}
+                sessionLog={sessionLog}
+                totalSessions={timer.totalSessions}
+                focusMin={timer.focusMin}
+              />
             )}
           </div>
         </div>
@@ -322,6 +314,29 @@ export default function App() {
         />
       )}
 
+      {timer.showSettings && (
+        <div className="settings-overlay" onClick={timer.closeSettings}>
+          <div className="settings-dialog" onClick={(e) => e.stopPropagation()}>
+            <div style={settingsDialogHeader}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--th-p700)" }}>⚙️ 설정</span>
+              <button style={settingsCloseBtn} onClick={timer.closeSettings}>✕</button>
+            </div>
+            <Settings
+              focusMin={timer.focusMin}
+              breakMin={timer.breakMin}
+              updateFocusMin={timer.updateFocusMin}
+              updateBreakMin={timer.updateBreakMin}
+              theme={timer.theme}
+              setTheme={timer.setTheme}
+              dailyGoal={timer.dailyGoal}
+              setDailyGoal={timer.setDailyGoal}
+              devMode={timer.devMode}
+              setDevMode={timer.setDevMode}
+            />
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes wiggle {
           0%,100% { transform: rotate(0deg) scale(1); }
@@ -344,6 +359,9 @@ export default function App() {
           display: flex;
           flex-direction: column;
         }
+        .app-col-right {
+          margin-top: 20px;
+        }
         @media (min-width: 640px) {
           .app-card {
             max-width: 800px;
@@ -361,12 +379,57 @@ export default function App() {
           .app-col-right {
             flex: 1;
             min-width: 0;
+            margin-top: 0;
           }
+        }
+        .settings-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 200;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0, 0, 0, 0.35);
+          backdrop-filter: blur(3px);
+          padding: 20px;
+        }
+        .settings-dialog {
+          background: var(--th-card-bg);
+          border-radius: 20px;
+          border: 1.5px solid var(--th-p200);
+          width: 100%;
+          max-width: 320px;
+          max-height: 85vh;
+          overflow-y: auto;
+          box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+          animation: dialogIn 0.18s ease;
+        }
+        @keyframes dialogIn {
+          from { opacity: 0; transform: scale(0.95) translateY(6px); }
+          to   { opacity: 1; transform: scale(1) translateY(0); }
         }
       `}</style>
     </div>
   );
 }
+
+const settingsDialogHeader: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "14px 16px 0",
+};
+
+const settingsCloseBtn: React.CSSProperties = {
+  background: "none",
+  border: "none",
+  cursor: "pointer",
+  fontSize: 16,
+  color: "var(--th-text-label)",
+  padding: "2px 4px",
+  borderRadius: 6,
+  lineHeight: 1,
+};
 
 const conflictStyle: Record<string, React.CSSProperties> = {
   wrap: {
